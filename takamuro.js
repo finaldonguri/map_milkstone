@@ -26,7 +26,7 @@ window.addEventListener('DOMContentLoaded', function () {
     // ←ここをついにJapanGSITerrainProvider版に変える
 terrainProvider: new Cesium.JapanGSITerrainProvider({
     heightPower: 1.0,
-    url: 'https://cyberjapandata.gsi.go.jp/xyz/dem5a/'
+    url: 'https://cyberjapandata.gsi.go.jp/xyz/dem5b/'
 }),
 
 
