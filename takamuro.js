@@ -1,8 +1,5 @@
 window.addEventListener("DOMContentLoaded", function () {
 
-
-  Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIyOGRiZmY3Yy0wNzRjLTQ2MjktOGQ0Ni0xYmI5MzFmNDUxZDAiLCJpZCI6MzU0MDY0LCJpYXQiOjE3NjE0NTQ3MDh9.p9q4yTuNNbVz7U09nx04n-LQG0sxXh8TDw22H3FSIV0';
-
   const viewer = new Cesium.Viewer('mapdiv', {
     animation : false,
     baseLayerPicker: false,
@@ -14,21 +11,22 @@ window.addEventListener("DOMContentLoaded", function () {
     scene3DOnly: true,
     timeline: false,
 
+    // ←背景タイル（地理院）
     imageryProvider: new Cesium.UrlTemplateImageryProvider({
       url: 'https://cyberjapandata.gsi.go.jp/xyz/relief/{z}/{x}/{y}.png',
       credit: '地理院タイル（色別標高図）'
     }),
 
-    // ここが平坦→立体になるところ
-    terrainProvider: Cesium.createWorldTerrain()
+    // ←地形は平坦でOK
+    terrainProvider: new Cesium.EllipsoidTerrainProvider()
   });
 
-  // カメラ位置（座標はあなたの山に合わせていい）
+  // カメラ初期位置
   viewer.camera.setView({
     destination: Cesium.Cartesian3.fromDegrees(
-      135.5,   // 経度
+      135.5,   // 経度（実際の山の経度にあとで置き換えてOK）
       35.2,    // 緯度
-      300.0    // カメラ高度[m]。山が高いなら500〜1000くらいにしてもOK
+      300.0    // カメラ高度[m]
     ),
     orientation: {
       heading: Cesium.Math.toRadians(0.0),
@@ -37,14 +35,14 @@ window.addEventListener("DOMContentLoaded", function () {
     }
   });
 
-  // ルート読み込み
+  // GeoJSONルートの読み込み
   Cesium.GeoJsonDataSource.load('data/route.geojson').then(function (datasource) {
 
+    // 線の色と太さを黄色に
     datasource.entities.values.forEach(function (entity) {
       if (Cesium.defined(entity.polyline)) {
         entity.polyline.material = Cesium.Color.YELLOW;
         entity.polyline.width = 3;
-        // Optional: ルートをちょっと地面から浮かせたいなら clampToGround:false にする等
       }
     });
 
