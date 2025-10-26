@@ -3,45 +3,35 @@ window.onload = function () {
     // Cesium ionのアクセストークン
     Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIyOGRiZmY3Yy0wNzRjLTQ2MjktOGQ0Ni0xYmI5MzFmNDUxZDAiLCJpZCI6MzU0MDY0LCJpYXQiOjE3NjE0NTQ3MDh9.p9q4yTuNNbVz7U09nx04n-LQG0sxXh8TDw22H3FSIV0';
 
-    // 国土地理院の地形プロバイダーを作成
-    var terrainProvider = new Cesium.JapanGSITerrainProvider({
-        url: 'https://cyberjapandata.gsi.go.jp/xyz/dem5a_png/{z}/{x}/{y}.png'
-    });
-
     // Cesiumビューワーを作成
- var viewer = new Cesium.Viewer('mapdiv', {
-    animation : false,
-    baseLayerPicker: false,
-    fullscreenButton: false,
-    geocoder: false,
-    homeButton: false,
-    navigationHelpButton: false,
-    sceneModePicker: false,
-    scene3DOnly: true,
-    timeline: false,
-    imageryProvider: new Cesium.OpenStreetMapImageryProvider({
-      url: '//cyberjapandata.gsi.go.jp/xyz/relief/'
-    }),
-    terrainProvider: new Cesium.JapanGSITerrainProvider({
-      heightPower: 1.0
-    })
-  });
-
-  var layers = viewer.scene.imageryLayers;
-  var osm = layers.addImageryProvider(
-    new Cesium.OpenStreetMapImageryProvider()
-  );
-  osm.alpha = 0.6;
-
-  viewer.dataSources.add(datasource);
-  viewer.zoomTo(datasource);
-});
- 
-
-    // 初期カメラ位置（日本周辺）
-    viewer.camera.setView({
-        destination: Cesium.Cartesian3.fromDegrees(138.0, 36.0, 500000)
+    var viewer = new Cesium.Viewer('mapdiv', {
+        animation: false,
+        baseLayerPicker: false,
+        fullscreenButton: false,
+        geocoder: false,
+        homeButton: false,
+        navigationHelpButton: false,
+        sceneModePicker: false,
+        scene3DOnly: true,
+        timeline: false,
+        // 国土地理院の陰影起伏図を背景に使用
+        imageryProvider: new Cesium.OpenStreetMapImageryProvider({
+            url: '//cyberjapandata.gsi.go.jp/xyz/relief/'
+        }),
+        // 国土地理院の地形データを使用
+        terrainProvider: new Cesium.JapanGSITerrainProvider({
+            heightPower: 1.0
+        })
     });
+
+    // 標準地図レイヤーを追加（半透明）
+    var layers = viewer.scene.imageryLayers;
+    var osm = layers.addImageryProvider(
+        new Cesium.OpenStreetMapImageryProvider({
+            url: '//cyberjapandata.gsi.go.jp/xyz/std/'
+        })
+    );
+    osm.alpha = 0.6; // 透明度60%
 
     // 情報パネルを作成
     var infoDiv = document.createElement('div');
@@ -50,11 +40,15 @@ window.onload = function () {
     document.body.appendChild(infoDiv);
 
     // GeoJSONルートを読み込み
-    Cesium.GeoJsonDataSource.load('data/route.geojson', {
+    var routePath = 'data/route.geojson';
+    var promise = Cesium.GeoJsonDataSource.load(routePath, {
         stroke: Cesium.Color.RED,
         strokeWidth: 4,
         clampToGround: true // 地形に沿わせる
-    }).then(function (dataSource) {
+    });
+
+    promise.then(function (dataSource) {
+        // データソースを追加
         viewer.dataSources.add(dataSource);
 
         // ルートの情報を表示
