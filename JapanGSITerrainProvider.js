@@ -15,6 +15,8 @@ var
 
 "use strict";
 
+
+
 // ★追加: フォールバック
 if (!defineProperties) {
     defineProperties = function (target, props) {

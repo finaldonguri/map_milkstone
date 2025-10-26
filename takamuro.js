@@ -1,74 +1,110 @@
-window.addEventListener("DOMContentLoaded", function () {
+// Cesium ionのアクセストークン（今は使わないけど置いておいてOK）
+Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIyOGRiZmY3Yy0wNzRjLTQ2MjktOGQ0Ni0xYmI5MzFmNDUxZDAiLCJpZCI6MzU0MDY0LCJpYXQiOjE3NjE0NTQ3MDh9.p9q4yTuNNbVz7U09nx04n-LQG0sxXh8TDw22H3FSIV0';
 
-  // 1. Viewerをまず最低構成で立ち上げる
-  const viewer = new Cesium.Viewer('mapdiv', {
-    animation : false,
+window.addEventListener('DOMContentLoaded', function () {
+  console.log('ページ読み込み完了');
+
+  // 情報パネル
+  var infoDiv = document.createElement('div');
+  infoDiv.id = 'info';
+  infoDiv.innerHTML = '<h3>高室山ルート</h3><p>初期化中...</p>';
+  document.body.appendChild(infoDiv);
+
+  console.log('Cesiumビューワー作成開始');
+
+  var viewer = new Cesium.Viewer('mapdiv', {
+    animation: false,
     baseLayerPicker: false,
-    fullscreenButton: false,
+    fullscreenButton: true,
     geocoder: false,
-    homeButton: false,
+    homeButton: true,
     navigationHelpButton: false,
     sceneModePicker: false,
     scene3DOnly: true,
     timeline: false,
 
-  terrainProvider: new Cesium.JapanGSITerrainProvider({
-    // heightPower は標高の強調倍率。1.0 = 等倍、2.0 = 2倍持ち上げ
-    heightPower: 1.0,
-    // url はデフォルトで 'https://cyberjapandata.gsi.go.jp/xyz/dem/' になってるはず
-    // もし https が必要なら明示的に:
-    url: 'https://cyberjapandata.gsi.go.jp/xyz/dem/'
-  })
-});
+    // まずは安全な平面地形で立ち上げる
+    terrainProvider: new Cesium.EllipsoidTerrainProvider(),
 
-  // 2. 念のためGlobeがちゃんとあるようにする（地球本体が無いとタイル貼れない）
-  if (!viewer.scene.globe) {
-    viewer.scene.globe = new Cesium.Globe(Cesium.Ellipsoid.WGS84);
-    viewer.scene.globe.terrainProvider = new Cesium.EllipsoidTerrainProvider();
-  }
-
-  // 3. ここで手動で背景タイルレイヤを追加する
-  const gsiLayer = viewer.scene.imageryLayers.addImageryProvider(
-    new Cesium.UrlTemplateImageryProvider({
-      // 標準地図 or relief 好きな方
+    // 色別標高図タイル
+    imageryProvider: new Cesium.UrlTemplateImageryProvider({
       url: 'https://cyberjapandata.gsi.go.jp/xyz/relief/{z}/{x}/{y}.png',
-      credit: '地理院タイル（色別標高図）'
+      credit: '国土地理院 色別標高図'
+    })
+  });
+
+  console.log('Cesiumビューワー作成完了');
+
+  // 標準地図を半透明でオーバーレイ
+  var stdLayer = viewer.imageryLayers.addImageryProvider(
+    new Cesium.UrlTemplateImageryProvider({
+      url: 'https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png',
+      credit: '国土地理院 標準地図'
     })
   );
+  stdLayer.alpha = 0.5;
 
-  // 透明度を少し調整したければ例えば:
-  // gsiLayer.alpha = 1.0;
+  infoDiv.innerHTML = '<h3>高室山ルート</h3><p>GeoJSON読み込み中...</p>';
 
-  // 4. カメラ位置（山のあたりに寄せる）
-  viewer.camera.setView({
-    destination: Cesium.Cartesian3.fromDegrees(
-      135.5,   // 経度（あなたの山に置き換えOK）
-      35.2,    // 緯度
-      300.0    // カメラ高度[m]
-    ),
-    orientation: {
-      heading: Cesium.Math.toRadians(0.0),
-      pitch: Cesium.Math.toRadians(-30.0),
-      roll: 0.0
-    }
-  });
+  var routePath = 'data/route.geojson';
+  console.log('GeoJSON読み込み開始:', routePath);
 
-  // 5. ルート読み込み＆表示
-  Cesium.GeoJsonDataSource.load('data/route.geojson').then(function (datasource) {
+  Cesium.GeoJsonDataSource.load(routePath).then(function (dataSource) {
+    console.log('GeoJSON読み込み成功');
 
-    datasource.entities.values.forEach(function (entity) {
-      if (Cesium.defined(entity.polyline)) {
-        entity.polyline.material = Cesium.Color.YELLOW;
-        entity.polyline.width = 3;
+    viewer.dataSources.add(dataSource);
+
+    var entities = dataSource.entities.values;
+    console.log('エンティティ数:', entities.length);
+
+    for (var i = 0; i < entities.length; i++) {
+      var entity = entities[i];
+
+      if (entity.polyline) {
+        entity.polyline.material = Cesium.Color.RED;
+        entity.polyline.width = 5;
+        // clampToGround は古いビルドだと無いことがあるので、必要なら後で戻す
+        // entity.polyline.clampToGround = true;
       }
-    });
 
-    viewer.dataSources.add(datasource);
+      if (entity.position) {
+        entity.point = new Cesium.PointGraphics({
+          pixelSize: 10,
+          color: Cesium.Color.YELLOW,
+          outlineColor: Cesium.Color.BLACK,
+          outlineWidth: 2
+        });
 
-    // ルートにズーム
-    viewer.zoomTo(datasource);
-  }).catch(function (err) {
-    console.error('GeoJSON読み込み失敗:', err);
+        if (i === 0) {
+          entity.point.pixelSize = 15;
+          entity.point.color = Cesium.Color.GREEN;
+        }
+
+        if (i === entities.length - 1) {
+          entity.point.pixelSize = 15;
+          entity.point.color = Cesium.Color.BLUE;
+        }
+      }
+    }
+
+    infoDiv.innerHTML =
+      '<h3>高室山ルート</h3>' +
+      '<p>ポイント数: ' + entities.length + '</p>' +
+      '<p><small>地形: 平坦(テスト)</small></p>';
+
+    viewer.zoomTo(
+      dataSource,
+      new Cesium.HeadingPitchRange(
+        0,
+        -0.5,
+        1500 // ちょい近め
+      )
+    );
+  }).catch(function (error) {
+    console.error('GeoJSON読み込みエラー:', error);
+    infoDiv.innerHTML =
+      '<h3>エラー</h3>' +
+      '<p>ルートの読み込みに失敗しました</p>' +
+      '<p>エラー: ' + error.message + '</p>';
   });
-
 });
