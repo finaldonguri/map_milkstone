@@ -17,12 +17,47 @@ var
 
 
 
-// ★追加: フォールバック
-if (!defineProperties) {
+// ===== Cesium互換フォールバック =====
+
+// defaultValue(a, b): a が undefined / null のとき b を返す
+if (typeof defaultValue !== 'function') {
+    defaultValue = function(a, b) {
+        return (a === undefined || a === null) ? b : a;
+    };
+}
+
+// defined(x): x が undefined/null じゃないかを返す
+if (typeof defined !== 'function') {
+    defined = function(x) {
+        return x !== undefined && x !== null;
+    };
+}
+
+// defineProperties(obj, {prop:{get:..., set:...}, ...})
+// あなたのCesium.jsに Cesium.defineProperties が無いので、Object.definePropertiesで代用
+if (typeof defineProperties !== 'function') {
     defineProperties = function (target, props) {
         Object.defineProperties(target, props);
     };
 }
+
+// when(promise, onFulfilled, onRejected)
+// 古いCesiumはwhen(Promise, ...)を使ってた。なければPromise.resolveで代用。
+if (typeof when === 'undefined') {
+    when = function(promise, onFulfilled, onRejected) {
+        return Promise.resolve(promise).then(onFulfilled, onRejected);
+    };
+}
+
+// throttleRequestByServer(url) が未定義の可能性もある。
+// まだエラー出てないから今回は触らないけど、もし次に
+// "throttleRequestByServer is not a function" が出たらこうして:
+//
+// if (typeof throttleRequestByServer !== 'function') {
+//     throttleRequestByServer = function(u) { return u; };
+// }
+
+// ===== フォールバックここまで =====
 
 
 
