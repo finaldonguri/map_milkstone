@@ -24,10 +24,11 @@ window.addEventListener('DOMContentLoaded', function () {
     timeline: false,
 
     // ←ここをついにJapanGSITerrainProvider版に変える
-    terrainProvider: new Cesium.JapanGSITerrainProvider({
-        heightPower: 1.0,
-        url: 'https://cyberjapandata.gsi.go.jp/xyz/dem/'
-    }),
+terrainProvider: new Cesium.JapanGSITerrainProvider({
+    heightPower: 1.0,
+    url: 'https://cyberjapandata.gsi.go.jp/xyz/dem5a/'
+}),
+
 
     // 色別標高図タイル
     imageryProvider: new Cesium.UrlTemplateImageryProvider({
