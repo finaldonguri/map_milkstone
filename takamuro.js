@@ -9,21 +9,34 @@ window.onload = function () {
     });
 
     // Cesiumビューワーを作成
-    var viewer = new Cesium.Viewer('mapdiv', {
-        terrainProvider: terrainProvider,
-        baseLayerPicker: true,
-        navigationHelpButton: false,
-        animation: false,
-        timeline: false,
-        // 国土地理院の標準地図を背景に使用
-        imageryProvider: new Cesium.UrlTemplateImageryProvider({
-            url: 'https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png',
-            credit: new Cesium.Credit('国土地理院')
-        })
-    });
+ var viewer = new Cesium.Viewer('mapdiv', {
+    animation : false,
+    baseLayerPicker: false,
+    fullscreenButton: false,
+    geocoder: false,
+    homeButton: false,
+    navigationHelpButton: false,
+    sceneModePicker: false,
+    scene3DOnly: true,
+    timeline: false,
+    imageryProvider: new Cesium.OpenStreetMapImageryProvider({
+      url: '//cyberjapandata.gsi.go.jp/xyz/relief/'
+    }),
+    terrainProvider: new Cesium.JapanGSITerrainProvider({
+      heightPower: 1.0
+    })
+  });
 
-    // 地形の誇張（山の起伏を強調）
-    viewer.scene.globe.terrainExaggeration = 1.5;
+  var layers = viewer.scene.imageryLayers;
+  var osm = layers.addImageryProvider(
+    new Cesium.OpenStreetMapImageryProvider()
+  );
+  osm.alpha = 0.6;
+
+  viewer.dataSources.add(datasource);
+  viewer.zoomTo(datasource);
+});
+ 
 
     // 初期カメラ位置（日本周辺）
     viewer.camera.setView({
