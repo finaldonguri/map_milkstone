@@ -1,9 +1,5 @@
-// takamuro.js
-
-// ページのDOMができてから実行
 window.addEventListener("DOMContentLoaded", function () {
 
-  // 1. Cesium.Viewer を初期化
   const viewer = new Cesium.Viewer('mapdiv', {
     animation : false,
     baseLayerPicker: false,
@@ -15,19 +11,26 @@ window.addEventListener("DOMContentLoaded", function () {
     scene3DOnly: true,
     timeline: false,
 
-    // まずは確実に動く地形。平坦な楕円体。
-    terrainProvider: new Cesium.EllipsoidTerrainProvider()
+    // imageryProvider: new Cesium.OpenStreetMapImageryProvider({
+      url: 'https://tile.openstreetmap.org/'
+    }), 
+    //
 
-    // ← imageryProvider は一旦入れない
-    // （Cesium側のデフォルトレイヤを使わせてみる）
+    // ↓ここをまず安全なものにする
+    // terrainProvider: new Cesium.JapanGSITerrainProvider({ heightPower: 1.0 })
+    // ↑をコメントアウトして ↓に置き換える
+
+    terrainProvider: new Cesium.EllipsoidTerrainProvider()
+    // または ionのトークンセット済みであれば:
+    // terrainProvider: Cesium.createWorldTerrain()
   });
 
-  // 2. カメラの初期位置（適当に仮座標）
+  // カメラ初期位置
   viewer.camera.setView({
     destination: Cesium.Cartesian3.fromDegrees(
-      135.5,  // 経度(仮)
-      35.2,   // 緯度(仮)
-      2000    // 視点高度[m]
+      135.5,  // 仮の経度
+      35.2,   // 仮の緯度
+      2000    // 高度[m]
     ),
     orientation: {
       heading: Cesium.Math.toRadians(0.0),
@@ -36,11 +39,10 @@ window.addEventListener("DOMContentLoaded", function () {
     }
   });
 
-  // 3. GeoJSONのルートを読み込んで重ねる
+  // GeoJSONをオーバーレイ
   Cesium.GeoJsonDataSource.load('data/route.geojson').then(function (datasource) {
-
-    // 線の色と太さをカスタム（黄色いライン）
-    datasource.entities.values.forEach(function (entity) {
+    // ルートのスタイルを見やすくする（黄色とかはCesium任せだと変わる可能性あるのでカスタム可）
+    datasource.entities.values.forEach(function(entity){
       if (Cesium.defined(entity.polyline)) {
         entity.polyline.material = Cesium.Color.YELLOW;
         entity.polyline.width = 3;
@@ -49,7 +51,6 @@ window.addEventListener("DOMContentLoaded", function () {
 
     viewer.dataSources.add(datasource);
     viewer.zoomTo(datasource);
-
   }).catch(function (err) {
     console.error('GeoJSON読み込み失敗:', err);
   });
