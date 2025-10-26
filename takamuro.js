@@ -109,7 +109,7 @@ window.addEventListener('DOMContentLoaded', function () {
     infoDiv.innerHTML =
       '<h3>高室山ルート</h3>' +
       '<p>ポイント数: ' + entities.length + '</p>' +
-      '<p><small>地形: 平坦(テスト)</small></p>';
+      '<p><small>地形: 試験中</small></p>';
 
     viewer.zoomTo(
       dataSource,

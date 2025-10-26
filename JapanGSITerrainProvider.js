@@ -59,6 +59,16 @@ if (typeof throttleRequestByServer !== 'function') {
     };
 }
 
+// loadText(url) が無いビルド用フォールバック
+if (typeof loadText !== 'function') {
+    loadText = function(url) {
+        return fetch(url).then(function (r) {
+            return r.text();
+        });
+    };
+}
+
+
 // ===== フォールバックここまで =====
 
 
@@ -105,64 +115,97 @@ if (typeof throttleRequestByServer !== 'function') {
     };
 
     JapanGSITerrainProvider.prototype.requestTileGeometry = function(x, y, level, throttleRequests) {
-        var orgx = x;
-        var orgy = y;
-        var shift = 0;
-        if (level > GSI_MAX_TERRAIN_LEVEL) {
-            shift = level - GSI_MAX_TERRAIN_LEVEL;
-            level = GSI_MAX_TERRAIN_LEVEL;
+    var orgx = x;
+    var orgy = y;
+    var shift = 0;
+    if (level > GSI_MAX_TERRAIN_LEVEL) {
+        shift = level - GSI_MAX_TERRAIN_LEVEL;
+        level = GSI_MAX_TERRAIN_LEVEL;
+    }
+
+    x >>= shift + 1;
+    y >>= shift;
+    var shiftx = (orgx % Math.pow(2, shift + 1)) / Math.pow(2, shift + 1);
+    var shifty = (orgy % Math.pow(2, shift)) / Math.pow(2, shift);
+
+    var url = this._url + level + '/' + x + '/' + y + '.txt';
+
+    var proxy = this._proxy;
+    if (defined(proxy)) {
+        url = proxy.getURL(url);
+    }
+
+    // リクエスト準備
+    throttleRequests = defaultValue(throttleRequests, true);
+
+    var promise;
+    if (throttleRequests) {
+        promise = throttleRequestByServer(url, loadText);
+        if (!defined(promise)) {
+            // サーバーに遠慮して今回は取らない、という場合
+            return undefined;
         }
+    } else {
+        promise = loadText(url);
+    }
 
-        x >>= shift+1;
-        y >>= shift;
-        var shiftx = (orgx % Math.pow(2, shift + 1)) / Math.pow(2, shift + 1);
-        var shifty = (orgy % Math.pow(2, shift)) / Math.pow(2, shift);
+    var self = this;
 
-        var url = this._url + level + '/' + x + '/' + y + '.txt';
-
-        var proxy = this._proxy;
-        if (defined(proxy)) {
-            url = proxy.getURL(url);
-        }
-
-        var promise;
-
-        throttleRequests = defaultValue(throttleRequests, true);
-        if (throttleRequests) {
-            promise = throttleRequestByServer(url, loadText);
-            if (!defined(promise)) {
-                return undefined;
-            }
-        } else {
-            promise = loadText(url);
-        }
-
-        var self = this;
-        return when(promise, function(data) {
+    // ←↓↓↓↓ ココからが重要: タイルパースを try/catch で守る ↓↓↓↓
+    return when(promise, function(data) {
+        try {
+            // 1. テキストを行ごとに分解して heightCSV 二次元配列を作る
             var heightCSV = [];
             var LF = String.fromCharCode(10);
             var lines = data.split(LF);
-            for (var i=0; i<lines.length; i++){
+
+            for (var i = 0; i < lines.length; i++) {
+                // 空行や変な行を飛ばす
+                if (!lines[i] || lines[i].length === 0) {
+                    continue;
+                }
                 var heights = lines[i].split(",");
-                for (var j=0; j<heights.length; j++){
-                    if (heights[j] == "e") heights[j] = 0;
+                for (var j = 0; j < heights.length; j++) {
+                    if (heights[j] === "e" || heights[j] === undefined || heights[j] === "") {
+                        heights[j] = 0;
+                    }
                 }
-                heightCSV[i] = heights;
+                heightCSV.push(heights);
             }
 
-            var whm = self._heightmapWidth;
-            var wim = self._demDataWidth;
-            var hmp = new Int16Array(whm*whm);
+            var whm = self._heightmapWidth;   // 32
+            var wim = self._demDataWidth;     // 256
+            var hmp = new Int16Array(whm * whm);
 
-            for(var y = 0; y < whm; ++y){
-                for(var x = 0; x < whm; ++x){
-                    var py = Math.round( ( y / Math.pow(2, shift) / ( whm - 1 ) + shifty ) * ( wim - 1 ) );
-                    var px = Math.round( ( x / Math.pow(2, shift + 1) / ( whm - 1 ) + shiftx ) * ( wim - 1 ) );
+            for (var yy = 0; yy < whm; ++yy) {
+                for (var xx = 0; xx < whm; ++xx) {
 
-                    hmp[y*whm + x] = Math.round(heightCSV[py][px] * self._heightPower);
+                    var py = Math.round(
+                        (yy / Math.pow(2, shift) / (whm - 1) + shifty) * (wim - 1)
+                    );
+                    var px = Math.round(
+                        (xx / Math.pow(2, shift + 1) / (whm - 1) + shiftx) * (wim - 1)
+                    );
+
+                    // heightCSV[py] や heightCSV[py][px] が存在しないケースに備える
+                    if (
+                        py < 0 || py >= heightCSV.length ||
+                        !heightCSV[py] ||
+                        px < 0 || px >= heightCSV[py].length
+                    ) {
+                        // データがない場所は0mで埋める
+                        hmp[yy * whm + xx] = 0;
+                    } else {
+                        var hVal = Number(heightCSV[py][px]);
+                        if (isNaN(hVal)) {
+                            hVal = 0;
+                        }
+                        hmp[yy * whm + xx] = Math.round(hVal * self._heightPower);
+                    }
                 }
             }
 
+            // 2. HeightmapTerrainData に渡してCesium側に標高メッシュとして返す
             return new HeightmapTerrainData({
                 buffer:        hmp,
                 width:         self._heightmapWidth,
@@ -170,8 +213,31 @@ if (typeof throttleRequestByServer !== 'function') {
                 structure:     self._terrainDataStructure,
                 childTileMask: GSI_MAX_TERRAIN_LEVEL
             });
-        });
-    };
+
+        } catch (e) {
+            // パースに失敗したタイルはスキップ（null返し）
+            console.log(
+                'An error occurred in "JapanGSITerrainProvider": ' +
+                'Failed to obtain terrain tile X: ' + x +
+                ' Y: ' + y +
+                ' Level: ' + level +
+                '. Error message: "' + e + '"'
+            );
+            return null;
+        }
+    }, function(err) {
+        // fetch/load そのものが失敗したときの保険
+        console.log(
+            'An error occurred in "JapanGSITerrainProvider": ' +
+            'Failed to request terrain tile X: ' + x +
+            ' Y: ' + y +
+            ' Level: ' + level +
+            '. Network error: "' + err + '"'
+        );
+        return null;
+    });
+};
+
 
     JapanGSITerrainProvider.prototype.getLevelMaximumGeometricError = function(level) {
         return this._levelZeroMaximumGeometricError / (1 << level);
