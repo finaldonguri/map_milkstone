@@ -1,5 +1,6 @@
 window.addEventListener("DOMContentLoaded", function () {
 
+  // 1. Viewerをまず最低構成で立ち上げる
   const viewer = new Cesium.Viewer('mapdiv', {
     animation : false,
     baseLayerPicker: false,
@@ -11,20 +12,32 @@ window.addEventListener("DOMContentLoaded", function () {
     scene3DOnly: true,
     timeline: false,
 
-    // ←背景タイル（地理院）
-    imageryProvider: new Cesium.UrlTemplateImageryProvider({
-      url: 'https://cyberjapandata.gsi.go.jp/xyz/relief/{z}/{x}/{y}.png',
-      credit: '地理院タイル（色別標高図）'
-    }),
-
-    // ←地形は平坦でOK
+    // いったんここでは imageryProvider を渡さない
     terrainProvider: new Cesium.EllipsoidTerrainProvider()
   });
 
-  // カメラ初期位置
+  // 2. 念のためGlobeがちゃんとあるようにする（地球本体が無いとタイル貼れない）
+  if (!viewer.scene.globe) {
+    viewer.scene.globe = new Cesium.Globe(Cesium.Ellipsoid.WGS84);
+    viewer.scene.globe.terrainProvider = new Cesium.EllipsoidTerrainProvider();
+  }
+
+  // 3. ここで手動で背景タイルレイヤを追加する
+  const gsiLayer = viewer.scene.imageryLayers.addImageryProvider(
+    new Cesium.UrlTemplateImageryProvider({
+      // 標準地図 or relief 好きな方
+      url: 'https://cyberjapandata.gsi.go.jp/xyz/relief/{z}/{x}/{y}.png',
+      credit: '地理院タイル（色別標高図）'
+    })
+  );
+
+  // 透明度を少し調整したければ例えば:
+  // gsiLayer.alpha = 1.0;
+
+  // 4. カメラ位置（山のあたりに寄せる）
   viewer.camera.setView({
     destination: Cesium.Cartesian3.fromDegrees(
-      135.5,   // 経度（実際の山の経度にあとで置き換えてOK）
+      135.5,   // 経度（あなたの山に置き換えOK）
       35.2,    // 緯度
       300.0    // カメラ高度[m]
     ),
@@ -35,10 +48,9 @@ window.addEventListener("DOMContentLoaded", function () {
     }
   });
 
-  // GeoJSONルートの読み込み
+  // 5. ルート読み込み＆表示
   Cesium.GeoJsonDataSource.load('data/route.geojson').then(function (datasource) {
 
-    // 線の色と太さを黄色に
     datasource.entities.values.forEach(function (entity) {
       if (Cesium.defined(entity.polyline)) {
         entity.polyline.material = Cesium.Color.YELLOW;
@@ -47,6 +59,8 @@ window.addEventListener("DOMContentLoaded", function () {
     });
 
     viewer.dataSources.add(datasource);
+
+    // ルートにズーム
     viewer.zoomTo(datasource);
   }).catch(function (err) {
     console.error('GeoJSON読み込み失敗:', err);
