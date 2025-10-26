@@ -49,13 +49,15 @@ if (typeof when === 'undefined') {
     };
 }
 
-// throttleRequestByServer(url) が未定義の可能性もある。
-// まだエラー出てないから今回は触らないけど、もし次に
-// "throttleRequestByServer is not a function" が出たらこうして:
-//
-// if (typeof throttleRequestByServer !== 'function') {
-//     throttleRequestByServer = function(u) { return u; };
-// }
+// throttleRequestByServer(url) が無いビルド用フォールバック
+if (typeof throttleRequestByServer !== 'function') {
+    throttleRequestByServer = function (url) {
+        // 本来は同じサーバーへの同時リクエスト数を制御して
+        // 混雑や403を防ぐためのラッパなんだけど、
+        // ここでは最低限「そのままURLを返す」だけにする。
+        return url;
+    };
+}
 
 // ===== フォールバックここまで =====
 
