@@ -12,8 +12,17 @@ var
     HeightmapTerrainData = Cesium.HeightmapTerrainData,
     TerrainProvider = Cesium.TerrainProvider,
     when = Cesium.when;
-/**/
-    "use strict";
+
+"use strict";
+
+// ★追加: フォールバック
+if (!defineProperties) {
+    defineProperties = function (target, props) {
+        Object.defineProperties(target, props);
+    };
+}
+
+
 
     var trailingSlashRegex = /\/$/;
     var defaultCredit = new Credit('国土地理院');

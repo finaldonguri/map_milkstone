@@ -12,9 +12,14 @@ window.addEventListener("DOMContentLoaded", function () {
     scene3DOnly: true,
     timeline: false,
 
-    // いったんここでは imageryProvider を渡さない
-    terrainProvider: new Cesium.EllipsoidTerrainProvider()
-  });
+  terrainProvider: new Cesium.JapanGSITerrainProvider({
+    // heightPower は標高の強調倍率。1.0 = 等倍、2.0 = 2倍持ち上げ
+    heightPower: 1.0,
+    // url はデフォルトで 'https://cyberjapandata.gsi.go.jp/xyz/dem/' になってるはず
+    // もし https が必要なら明示的に:
+    url: 'https://cyberjapandata.gsi.go.jp/xyz/dem/'
+  })
+});
 
   // 2. 念のためGlobeがちゃんとあるようにする（地球本体が無いとタイル貼れない）
   if (!viewer.scene.globe) {
