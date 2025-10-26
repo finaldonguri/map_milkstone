@@ -16,7 +16,13 @@ window.addEventListener("DOMContentLoaded", function () {
     timeline: false,
 
     // まずは確実に動く地形。平坦な楕円体。
-    terrainProvider: new Cesium.EllipsoidTerrainProvider()
+    terrainProvider: new Cesium.EllipsoidTerrainProvider(),
+
+    imageryProvider: new Cesium.UrlTemplateImageryProvider({
+  url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+  credit: '© OpenStreetMap contributors'
+}),
+
 
     // ← imageryProvider は一旦入れない
     // （Cesium側のデフォルトレイヤを使わせてみる）
