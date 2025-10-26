@@ -42,7 +42,7 @@ window.addEventListener('DOMContentLoaded', function () {
       credit: '国土地理院 標準地図'
     })
   );
-  stdLayer.alpha = 0.5;
+  stdLayer.alpha = 0.2;
 
   infoDiv.innerHTML = '<h3>高室山ルート</h3><p>GeoJSON読み込み中...</p>';
 
