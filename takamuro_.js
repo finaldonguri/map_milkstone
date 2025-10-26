@@ -1,0 +1,114 @@
+// Cesium ionのアクセストークン
+Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIyOGRiZmY3Yy0wNzRjLTQ2MjktOGQ0Ni0xYmI5MzFmNDUxZDAiLCJpZCI6MzU0MDY0LCJpYXQiOjE3NjE0NTQ3MDh9.p9q4yTuNNbVz7U09nx04n-LQG0sxXh8TDw22H3FSIV0';
+
+// ページ読み込み完了を待つ
+window.addEventListener('load', function() {
+    console.log('ページ読み込み完了');
+    
+    // 情報パネルを作成
+    var infoDiv = document.createElement('div');
+    infoDiv.id = 'info';
+    infoDiv.innerHTML = '<h3>高室山ルート</h3><p>初期化中...</p>';
+    document.body.appendChild(infoDiv);
+    
+    console.log('Cesiumビューワー作成開始');
+    
+    // Cesiumビューワーを作成
+    var viewer = new Cesium.Viewer('mapdiv', {
+        animation: false,
+        baseLayerPicker: false,
+        fullscreenButton: false,
+        geocoder: false,
+        homeButton: false,
+        navigationHelpButton: false,
+        sceneModePicker: false,
+        timeline: false
+    });
+    
+    console.log('Cesiumビューワー作成完了');
+    
+    // 日本にカメラを移動
+    viewer.camera.flyTo({
+        destination: Cesium.Cartesian3.fromDegrees(138.0, 36.0, 500000)
+    });
+    
+    infoDiv.innerHTML = '<h3>高室山ルート</h3><p>GeoJSON読み込み中...</p>';
+    
+    // GeoJSONを読み込み
+    var routePath = 'data/route.geojson';
+    console.log('GeoJSON読み込み開始:', routePath);
+    
+    Cesium.GeoJsonDataSource.load(routePath).then(function(dataSource) {
+        console.log('GeoJSON読み込み成功');
+        
+        // データソースを追加
+        viewer.dataSources.add(dataSource);
+        
+        // エンティティの色とサイズを設定
+        var entities = dataSource.entities.values;
+        console.log('エンティティ数:', entities.length);
+        
+        for (var i = 0; i < entities.length; i++) {
+            var entity = entities[i];　
+            
+            // ポリラインの場合
+            if (entity.polyline) {
+                entity.polyline.material = Cesium.Color.RED;
+                entity.polyline.width = 5;
+                entity.polyline.clampToGround = true;
+            }
+            
+            // ポイントの場合
+            if (entity.position) {
+                entity.point = new Cesium.PointGraphics({
+                    pixelSize: 10,
+                    color: Cesium.Color.YELLOW,
+                    outlineColor: Cesium.Color.BLACK,
+                    outlineWidth: 2
+                });
+                
+                // 最初のポイント（スタート）
+                if (i === 0) {
+                    entity.point.pixelSize = 15;
+                    entity.point.color = Cesium.Color.GREEN;
+                    entity.label = new Cesium.LabelGraphics({
+                        text: 'スタート',
+                        font: '14pt sans-serif',
+                        fillColor: Cesium.Color.WHITE,
+                        outlineColor: Cesium.Color.BLACK,
+                        outlineWidth: 2,
+                        style: Cesium.LabelStyle.FILL_AND_OUTLINE,
+                        verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
+                        pixelOffset: new Cesium.Cartesian2(0, -15)
+                    });
+                }
+                
+                // 最後のポイント（ゴール）
+                if (i === entities.length - 1) {
+                    entity.point.pixelSize = 15;
+                    entity.point.color = Cesium.Color.BLUE;
+                    entity.label = new Cesium.LabelGraphics({
+                        text: 'ゴール',
+                        font: '14pt sans-serif',
+                        fillColor: Cesium.Color.WHITE,
+                        outlineColor: Cesium.Color.BLACK,
+                        outlineWidth: 2,
+                        style: Cesium.LabelStyle.FILL_AND_OUTLINE,
+                        verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
+                        pixelOffset: new Cesium.Cartesian2(0, -15)
+                    });
+                }
+            }
+        }
+        
+        // 情報パネル更新
+        infoDiv.innerHTML = '<h3>高室山ルート</h3><p>ポイント数: ' + entities.length + '</p>';
+        
+        // カメラをルートに合わせる
+        viewer.zoomTo(dataSource);
+        
+    }).catch(function(error) {
+        console.error('GeoJSON読み込みエラー:', error);
+        infoDiv.innerHTML = '<h3>エラー</h3><p>ルートの読み込みに失敗しました</p><p>エラー: ' + error.message + '</p><p>data/route.geojsonが存在するか確認してください</p>';
+    });
+});
