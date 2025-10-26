@@ -11,9 +11,10 @@ window.addEventListener("DOMContentLoaded", function () {
     scene3DOnly: true,
     timeline: false,
 
-    imageryProvider: new Cesium.OpenStreetMapImageryProvider({
+    // imageryProvider: new Cesium.OpenStreetMapImageryProvider({
       url: 'https://tile.openstreetmap.org/'
-    }),
+    }), 
+    //
 
     // ↓ここをまず安全なものにする
     // terrainProvider: new Cesium.JapanGSITerrainProvider({ heightPower: 1.0 })
@@ -38,8 +39,16 @@ window.addEventListener("DOMContentLoaded", function () {
     }
   });
 
-  // あとからGeoJSON読み込み
+  // GeoJSONをオーバーレイ
   Cesium.GeoJsonDataSource.load('data/route.geojson').then(function (datasource) {
+    // ルートのスタイルを見やすくする（黄色とかはCesium任せだと変わる可能性あるのでカスタム可）
+    datasource.entities.values.forEach(function(entity){
+      if (Cesium.defined(entity.polyline)) {
+        entity.polyline.material = Cesium.Color.YELLOW;
+        entity.polyline.width = 3;
+      }
+    });
+
     viewer.dataSources.add(datasource);
     viewer.zoomTo(datasource);
   }).catch(function (err) {
