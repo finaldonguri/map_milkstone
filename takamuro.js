@@ -17,11 +17,12 @@ window.addEventListener("DOMContentLoaded", function () {
 
     // まずは確実に動く地形。平坦な楕円体。
     terrainProvider: new Cesium.EllipsoidTerrainProvider(),
+}),
 
 imageryProvider: new Cesium.UrlTemplateImageryProvider({
   url: 'https://cyberjapandata.gsi.go.jp/xyz/relief/{z}/{x}/{y}.png',
   credit: '地理院タイル（色別標高図）'
-}),
+
 
 
 
