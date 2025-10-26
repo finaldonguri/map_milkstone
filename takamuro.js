@@ -36,6 +36,22 @@ window.addEventListener('DOMContentLoaded', function () {
     })
   });
 
+  viewer.camera.setView({
+    destination: Cesium.Cartesian3.fromDegrees(
+
+
+
+        136.3,    // 経度（←あなたの山の経度に置き換えて）
+        35.2,     // 緯度（←あなたの山の緯度に置き換えて）
+        2000.0    // 上空高さ[m]。2000とか3000ぐらいにすると局所ズームになる
+    ),
+    orientation: {
+        heading: Cesium.Math.toRadians(0.0),
+        pitch: Cesium.Math.toRadians(-45.0),
+        roll: 0.0
+    }
+});
+
   console.log('Cesiumビューワー作成完了');
 
   // 標準地図を半透明でオーバーレイ
