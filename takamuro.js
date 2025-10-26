@@ -13,7 +13,7 @@ window.addEventListener('load', function() {
     
     console.log('Cesiumビューワー作成開始');
     
-    // Cesiumビューワーを作成（シンプル版）
+    // Cesiumビューワーを作成
     var viewer = new Cesium.Viewer('mapdiv', {
         animation: false,
         baseLayerPicker: false,
@@ -102,17 +102,13 @@ window.addEventListener('load', function() {
         }
         
         // 情報パネル更新
-        infoDiv.innerHTML = 
-            '<h3>高室山ルート</h3>' +
-            '<p>ポイント数: ' + entities.length + '</p>';
+        infoDiv.innerHTML = '<h3>高室山ルート</h3><p>ポイント数: ' + entities.length + '</p>';
         
         // カメラをルートに合わせる
         viewer.zoomTo(dataSource);
         
     }).catch(function(error) {
         console.error('GeoJSON読み込みエラー:', error);
-        infoDiv.innerHTML = 
-            '<h3>エラー</h3>' +
-            '<p>ルートの読み込みに失敗しました</p>' +
-            '<p><small>' + error.message + '</small></p>' +
-            '<p><small>
+        infoDiv.innerHTML = '<h3>エラー</h3><p>ルートの読み込みに失敗しました</p><p>エラー: ' + error.message + '</p><p>data/route.geojsonが存在するか確認してください</p>';
+    });
+});
