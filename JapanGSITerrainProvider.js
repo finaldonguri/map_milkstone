@@ -80,7 +80,7 @@ if (typeof loadText !== 'function') {
     var JapanGSITerrainProvider = function JapanGSITerrainProvider(options) {
         options = defaultValue(options, {});
 
-        var url = defaultValue(options.url, '//cyberjapandata.gsi.go.jp/xyz/dem/');
+        var url = defaultValue(options.url, 'https://cyberjapandata.gsi.go.jp/xyz/dem/');
 
         if (!trailingSlashRegex.test(url)) {
             url = url + '/';

@@ -3,17 +3,31 @@
 <head>
     <meta charset="utf-8">
     <title>高室山3Dマップ</title>
-    <link rel="stylesheet" href="widgets.css" type="text/css">
-    <link rel="stylesheet" href="takamuro.css" type="text/css">
-<script src="Cesium.js"></script>
-<script src="JapanGSITerrainProvider.js"></script>
-<script src="takamuro.js" defer></script>
 
-    
+    <!-- Cesiumのウィジェット用スタイル -->
+    <link rel="stylesheet" href="widgets.css" type="text/css">
+
+    <!-- 画面全体をCesiumに使わせるための簡単なCSS -->
+    <style>
+        html, body, #mapdiv {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+    </style>
+
+    <!-- Cesium本体（ローカルに置いたCesium.jsを読み込む） -->
+    <script src="Cesium.js"></script>
+
+    <!-- 国土地理院標高タイルをTerrainとして使うプロバイダ -->
+    <script src="JapanGSITerrainProvider.js"></script>
+
+    <!-- あなたの初期化コード -->
+    <script src="takamuro.js" defer></script>
 </head>
 <body>
     <div id="mapdiv"></div>
-  
-
 </body>
 </html>
