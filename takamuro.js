@@ -16,7 +16,9 @@ const gsiImagery = new Cesium.UrlTemplateImageryProvider({
 // 地形（高さ）プロバイダ
 // JapanGSITerrainProvider はあなたが用意したスクリプト側で
 // CesiumのTerrainProvider互換オブジェクトとして定義されている想定
-const gsiTerrain = new JapanGSITerrainProvider();
+// 変更前：const gsiTerrain = new JapanGSITerrainProvider();
+const gsiTerrain = new Cesium.JapanGSITerrainProvider();
+
 
 // Cesium Viewer本体をつくる。
 // 注意: container のIDは index.html 側と一致させること("mapdiv")
