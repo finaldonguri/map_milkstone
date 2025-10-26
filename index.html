@@ -5,95 +5,19 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>高室山3Dマップ</title>
-    <script src="https://cesium.com/downloads/cesiumjs/releases/1.110/Build/Cesium/Cesium.js"></script>
+    <!-- Cesium CDN -->
     <link href="https://cesium.com/downloads/cesiumjs/releases/1.110/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
-    <style>
-        html,
-        body,
-        #cesiumContainer {
-            width: 100%;
-            height: 100%;
-            margin: 0;
-            padding: 0;
-            overflow: hidden;
-        }
-
-        #info {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            background: rgba(255, 255, 255, 0.9);
-            padding: 10px;
-            border-radius: 5px;
-            font-family: sans-serif;
-            z-index: 1000;
-        }
-    </style>
+    <script src="https://cesium.com/downloads/cesiumjs/releases/1.110/Build/Cesium/Cesium.js"></script>
+    <!-- 国土地理院地形プロバイダー -->
+    <script type="text/javascript" src="JapanGSITerrainProvider.js"></script>
+    <!-- カスタムCSS -->
+    <link rel="stylesheet" href="takamuro.css" type="text/css">
+    <!-- カスタムJS -->
+    <script type="text/javascript" src="takamuro.js"></script>
 </head>
 
 <body>
-    <div id="info">
-        <h3>登山ルート</h3>
-        <p>読み込み中...</p>
-    </div>
-    <div id="cesiumContainer"></div>
-
-    <script>
-        // ここにCesium ionのアクセストークンを貼り付け
-        Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIyOGRiZmY3Yy0wNzRjLTQ2MjktOGQ0Ni0xYmI5MzFmNDUxZDAiLCJpZCI6MzU0MDY0LCJpYXQiOjE3NjE0NTQ3MDh9.p9q4yTuNNbVz7U09nx04n-LQG0sxXh8TDw22H3FSIV0';
-
-        // ビューワーを作成
-        const viewer = new Cesium.Viewer('cesiumContainer', {
-            terrainProvider: Cesium.createWorldTerrain({
-                requestWaterMask: true,
-                requestVertexNormals: true
-            }),
-            baseLayerPicker: true,
-            navigationHelpButton: false,
-            animation: false,
-            timeline: false
-        });
-
-        // 日本周辺にカメラを設定
-        viewer.camera.setView({
-            destination: Cesium.Cartesian3.fromDegrees(138.0, 36.0, 500000)
-        });
-
-        // GeoJSONルートを読み込み
-        Cesium.GeoJsonDataSource.load('..data/route.geojson', {
-            stroke: Cesium.Color.RED,
-            strokeWidth: 4,
-            clampToGround: true // 地形に沿わせる
-        }).then(function (dataSource) {
-            viewer.dataSources.add(dataSource);
-
-            // ルートの情報を表示
-            const entities = dataSource.entities.values;
-            document.getElementById('info').innerHTML =
-                '<h3>登山ルート</h3>' +
-                '<p>ポイント数: ' + entities.length + '</p>';
-
-            // カメラをルートに合わせる
-            viewer.zoomTo(dataSource, new Cesium.HeadingPitchRange(0, -0.5, 0));
-
-            // ポイントにラベルを追加（オプション）
-            entities.forEach(function (entity, index) {
-                if (entity.position) {
-                    entity.point = new Cesium.PointGraphics({
-                        color: Cesium.Color.YELLOW,
-                        pixelSize: 8,
-                        outlineColor: Cesium.Color.BLACK,
-                        outlineWidth: 2
-                    });
-                }
-            });
-        }).catch(function (error) {
-            document.getElementById('info').innerHTML =
-                '<h3>エラー</h3>' +
-                '<p>ルートの読み込みに失敗しました</p>';
-            console.error(error);
-        });
-    </script>
+    <div id="mapdiv"></div>
 </body>
 
 </html>
