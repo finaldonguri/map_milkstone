@@ -1,23 +1,18 @@
 <!DOCTYPE html>
 <html lang="ja">
-
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>高室山3Dマップ</title>
-    <!-- Cesium CDN -->
-    <link href="https://cesium.com/downloads/cesiumjs/releases/1.110/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
-    <script src="https://cesium.com/downloads/cesiumjs/releases/1.110/Build/Cesium/Cesium.js"></script>
-    <!-- 国土地理院地形プロバイダー -->
-    <script type="text/javascript" src="JapanGSITerrainProvider.js"></script>
+    <!-- Cesium CDN - 最新版を使用 -->
+    <script src="https://cesium.com/downloads/cesiumjs/releases/1.120/Build/Cesium/Cesium.js"></script>
+    <link href="https://cesium.com/downloads/cesiumjs/releases/1.120/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
     <!-- カスタムCSS -->
     <link rel="stylesheet" href="takamuro.css" type="text/css">
-    <!-- カスタムJS -->
-    <script type="text/javascript" src="takamuro.js"></script>
 </head>
-
 <body>
     <div id="mapdiv"></div>
+    <!-- JavaScriptは最後に読み込む -->
+    <script type="text/javascript" src="takamuro.js"></script>
 </body>
-
 </html>
