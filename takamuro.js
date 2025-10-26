@@ -13,42 +13,24 @@ window.addEventListener('load', function() {
     
     console.log('Cesiumビューワー作成開始');
     
-    // 国土地理院の地形プロバイダーを作成
-    var terrainProvider = new Cesium.CesiumTerrainProvider({
-        url: Cesium.IonResource.fromAssetId(770371) // 国土地理院の地形データ
-    });
-    
     // Cesiumビューワーを作成
     var viewer = new Cesium.Viewer('mapdiv', {
         animation: false,
         baseLayerPicker: false,
-        fullscreenButton: true,
+        fullscreenButton: false,
         geocoder: false,
-        homeButton: true,
+        homeButton: false,
         navigationHelpButton: false,
         sceneModePicker: false,
-        timeline: false,
-        terrainProvider: terrainProvider,
-        // 色別標高図を背景に設定
-        imageryProvider: new Cesium.UrlTemplateImageryProvider({
-            url: 'https://cyberjapandata.gsi.go.jp/xyz/relief/{z}/{x}/{y}.png',
-            credit: '国土地理院 色別標高図'
-        })
+        timeline: false
     });
     
-    // 地形の誇張（山の起伏を強調）
-    viewer.scene.globe.terrainExaggeration = 1.5;
-    
-    // OpenStreetMapレイヤーを半透明で追加
-    var osmLayer = viewer.imageryLayers.addImageryProvider(
-        new Cesium.UrlTemplateImageryProvider({
-            url: 'https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png',
-            credit: '国土地理院 標準地図'
-        })
-    );
-    osmLayer.alpha = 0.6; // 透過度60%
-    
     console.log('Cesiumビューワー作成完了');
+    
+    // 日本にカメラを移動
+    viewer.camera.flyTo({
+        destination: Cesium.Cartesian3.fromDegrees(138.0, 36.0, 500000)
+    });
     
     infoDiv.innerHTML = '<h3>高室山ルート</h3><p>GeoJSON読み込み中...</p>';
     
@@ -82,8 +64,7 @@ window.addEventListener('load', function() {
                     pixelSize: 10,
                     color: Cesium.Color.YELLOW,
                     outlineColor: Cesium.Color.BLACK,
-                    outlineWidth: 2,
-                    heightReference: Cesium.HeightReference.CLAMP_TO_GROUND
+                    outlineWidth: 2
                 });
                 
                 // 最初のポイント（スタート）
@@ -98,8 +79,7 @@ window.addEventListener('load', function() {
                         outlineWidth: 2,
                         style: Cesium.LabelStyle.FILL_AND_OUTLINE,
                         verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
-                        pixelOffset: new Cesium.Cartesian2(0, -15),
-                        heightReference: Cesium.HeightReference.CLAMP_TO_GROUND
+                        pixelOffset: new Cesium.Cartesian2(0, -15)
                     });
                 }
                 
@@ -115,22 +95,17 @@ window.addEventListener('load', function() {
                         outlineWidth: 2,
                         style: Cesium.LabelStyle.FILL_AND_OUTLINE,
                         verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
-                        pixelOffset: new Cesium.Cartesian2(0, -15),
-                        heightReference: Cesium.HeightReference.CLAMP_TO_GROUND
+                        pixelOffset: new Cesium.Cartesian2(0, -15)
                     });
                 }
             }
         }
         
         // 情報パネル更新
-        infoDiv.innerHTML = '<h3>高室山ルート</h3><p>ポイント数: ' + entities.length + '</p><p><small>地形: 国土地理院</small></p>';
+        infoDiv.innerHTML = '<h3>高室山ルート</h3><p>ポイント数: ' + entities.length + '</p>';
         
-        // カメラをルートに合わせる（問題1の解決）
-        viewer.zoomTo(dataSource, new Cesium.HeadingPitchRange(
-            0,        // 方位角: 北向き
-            -0.5,     // ピッチ: 斜め上から見下ろす角度
-            5000      // 距離: ルートから5000m離れた位置
-        ));
+        // カメラをルートに合わせる
+        viewer.zoomTo(dataSource);
         
     }).catch(function(error) {
         console.error('GeoJSON読み込みエラー:', error);
