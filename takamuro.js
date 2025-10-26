@@ -1,4 +1,9 @@
 // takamuro.js
+// Cesium が内部アセット(Workers, Assets, ThirdParty, Widgetsなど)を探す基準パスを指定してあげる
+// "./Build/Cesium/" は index.html からの相対パス
+if (Cesium.buildModuleUrl && Cesium.buildModuleUrl.setBaseUrl) {
+    Cesium.buildModuleUrl.setBaseUrl("./Build/Cesium/");
+}
 
 // まずCesiumのIonキーを無効にしておく（Cesiumのデフォルトで怒られることがあるため）
 // 無くても動く場合は消してOK
