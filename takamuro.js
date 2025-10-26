@@ -6,32 +6,20 @@ window.onload = function () {
     // Cesiumビューワーを作成
     var viewer = new Cesium.Viewer('mapdiv', {
         animation: false,
-        baseLayerPicker: false,
-        fullscreenButton: false,
+        baseLayerPicker: true,
+        fullscreenButton: true,
         geocoder: false,
-        homeButton: false,
+        homeButton: true,
         navigationHelpButton: false,
-        sceneModePicker: false,
-        scene3DOnly: true,
+        sceneModePicker: true,
+        scene3DOnly: false,
         timeline: false,
-        // 国土地理院の陰影起伏図を背景に使用
-        imageryProvider: new Cesium.OpenStreetMapImageryProvider({
-            url: '//cyberjapandata.gsi.go.jp/xyz/relief/'
-        }),
-        // 国土地理院の地形データを使用
-        terrainProvider: new Cesium.JapanGSITerrainProvider({
-            heightPower: 1.0
-        })
+        // Cesium標準の地形を使用
+        terrainProvider: Cesium.createWorldTerrain()
     });
 
-    // 標準地図レイヤーを追加（半透明）
-    var layers = viewer.scene.imageryLayers;
-    var osm = layers.addImageryProvider(
-        new Cesium.OpenStreetMapImageryProvider({
-            url: '//cyberjapandata.gsi.go.jp/xyz/std/'
-        })
-    );
-    osm.alpha = 0.6; // 透明度60%
+    // 地形の誇張（山の起伏を強調）
+    viewer.scene.globe.terrainExaggeration = 1.5;
 
     // 情報パネルを作成
     var infoDiv = document.createElement('div');
@@ -56,7 +44,7 @@ window.onload = function () {
         infoDiv.innerHTML =
             '<h3>高室山ルート</h3>' +
             '<p>ポイント数: ' + entities.length + '</p>' +
-            '<p><small>地形データ: 国土地理院</small></p>';
+            '<p><small>地形: Cesium World Terrain</small></p>';
 
         // カメラをルートに合わせる
         viewer.zoomTo(dataSource, new Cesium.HeadingPitchRange(0, -0.5, 5000));
