@@ -4,8 +4,10 @@
     <meta charset="utf-8">
     <title>高室山3Dマップ</title>
 
+    <script src="Build/Cesium/Cesium.js"></script>
+
     <!-- Cesiumのウィジェット用スタイル -->
-    <link rel="stylesheet" href="widgets.css" type="text/css">
+    <link href="Build/Cesium/Widgets/widgets.css" rel="stylesheet">
 
     <!-- 画面全体をCesiumに使わせるための簡単なCSS -->
     <style>
@@ -18,8 +20,7 @@
         }
     </style>
 
-    <!-- Cesium本体（ローカルに置いたCesium.jsを読み込む） -->
-    <script src="Cesium.js"></script>
+   
 
     <!-- 国土地理院標高タイルをTerrainとして使うプロバイダ -->
     <script src="JapanGSITerrainProvider.js"></script>
