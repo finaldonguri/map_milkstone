@@ -26,7 +26,7 @@ window.addEventListener('DOMContentLoaded', function () {
     // ←ここをついにJapanGSITerrainProvider版に変える
 terrainProvider: new Cesium.JapanGSITerrainProvider({
     heightPower: 1.0,
-    url: 'https://cyberjapandata.gsi.go.jp/xyz/demgm/'
+    url: 'https://cyberjapandata.gsi.go.jp/xyz/dem/'
 }),
 
 
@@ -117,7 +117,7 @@ terrainProvider: new Cesium.JapanGSITerrainProvider({
       new Cesium.HeadingPitchRange(
         0,
         -0.5,
-        1500 // ちょい近め
+        900 // ちょい近め
       )
     );
   }).catch(function (error) {
