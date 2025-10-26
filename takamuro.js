@@ -23,8 +23,12 @@ window.addEventListener('DOMContentLoaded', function () {
     scene3DOnly: true,
     timeline: false,
 
-    // まずは安全な平面地形で立ち上げる
-    terrainProvider: new Cesium.EllipsoidTerrainProvider(),
+
+    // ←ここをついにJapanGSITerrainProvider版に変える
+    terrainProvider: new Cesium.JapanGSITerrainProvider({
+        heightPower: 1.0,
+        url: 'https://cyberjapandata.gsi.go.jp/xyz/dem/'
+    }),
 
     // 色別標高図タイル
     imageryProvider: new Cesium.UrlTemplateImageryProvider({
