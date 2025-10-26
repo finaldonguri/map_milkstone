@@ -22,8 +22,9 @@ const gsiImagery = new Cesium.UrlTemplateImageryProvider({
 // JapanGSITerrainProvider はあなたが用意したスクリプト側で
 // CesiumのTerrainProvider互換オブジェクトとして定義されている想定
 // 変更前：const gsiTerrain = new JapanGSITerrainProvider();
-const gsiTerrain = new Cesium.JapanGSITerrainProvider();
-
+const gsiTerrain = new Cesium.JapanGSITerrainProvider({
+    url: "https://cyberjapandata.gsi.go.jp/xyz/dem/"
+});
 
 // Cesium Viewer本体をつくる。
 // 注意: container のIDは index.html 側と一致させること("mapdiv")
